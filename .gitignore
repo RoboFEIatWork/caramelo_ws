@@ -1,0 +1,6 @@
+# === ROS 2 / Colcon build system ===
+build/
+install/
+log/
+.vscode/
+colcon_install_layout.*
