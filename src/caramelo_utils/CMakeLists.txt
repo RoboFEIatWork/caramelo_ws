@@ -13,13 +13,12 @@ find_package(rclpy REQUIRED)
 find_package(std_msgs REQUIRED)
 find_package(geometry_msgs REQUIRED)
 find_package(teleop_twist_joy REQUIRED)
-find_package(teleop_twist_keyboard REQUIRED)
 find_package(twist_mux REQUIRED)
 
 ament_python_install_package(${PROJECT_NAME})
 
 install(PROGRAMS
-  ${PROJECT_NAME}/mapping_with_known_poses.py
+  ${PROJECT_NAME}/twist_relay.py
   DESTINATION lib/${PROJECT_NAME}
 )
 
