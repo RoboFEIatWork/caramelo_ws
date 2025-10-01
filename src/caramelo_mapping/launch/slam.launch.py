@@ -18,13 +18,13 @@ def generate_launch_description():
 
     use_sim_time_arg = DeclareLaunchArgument(
         "use_sim_time",
-        default_value="true"
+        default_value="false"
     )
 
     slam_config_arg = DeclareLaunchArgument(
         "slam_config",
         default_value=os.path.join(
-            get_package_share_directory("robot_mapping"),
+            get_package_share_directory("caramelo_mapping"),
             "config",
             "slam_toolbox.yaml"
         ),
