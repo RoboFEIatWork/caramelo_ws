@@ -39,8 +39,8 @@ def generate_launch_description():
         parameters=[
             {"save_map_timeout": 5.0},
             {"use_sim_time": use_sim_time},
-            {"free_thresh_default", "0.196"},
-            {"occupied_thresh_default", "0.65"},
+            {"free_thresh_default": 0.196},
+            {"occupied_thresh_default": 0.65},
         ],
     )
 
@@ -53,6 +53,7 @@ def generate_launch_description():
             slam_config,
             {"use_sim_time": use_sim_time},
         ],
+        arguments=['--ros-args', '--log-level', 'INFO']
     )
 
     nav2_lifecycle_manager = Node(
@@ -63,7 +64,8 @@ def generate_launch_description():
         parameters=[
             {"node_names": lifecycle_nodes},
             {"use_sim_time": use_sim_time},
-            {"autostart": True}
+            {"autostart": True},
+            {"bond_timeout": 4.0}
         ],
     )
 
