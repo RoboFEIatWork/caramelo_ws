@@ -1,6 +1,6 @@
 controller_server:
   ros__parameters:
-    use_sim_time: true
+    use_sim_time: false
     controller_frequency: 20.0
     min_x_velocity_threshold: 0.001
     min_y_velocity_threshold: 0.5
@@ -9,7 +9,7 @@ controller_server:
     progress_checker_plugin: "progress_checker"
     goal_checker_plugins: ["general_goal_checker"]
     controller_plugins: ["FollowPath"]
-    odom_topic: /bumperbot_controller/odom
+    odom_topic: /odom
 
     # Progress checker parameters
     progress_checker:
@@ -75,8 +75,8 @@ local_costmap:
       update_frequency: 5.0
       publish_frequency: 2.0
       global_frame: odom
-      robot_base_frame: base_link
-      use_sim_time: true
+      robot_base_frame: base_footprint
+      use_sim_time: false
       rolling_window: true
       width: 3
       height: 3

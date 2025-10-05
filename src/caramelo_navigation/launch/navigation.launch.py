@@ -3,7 +3,7 @@ import os
 from ament_index_python.packages import get_package_share_directory
 
 from launch import LaunchDescription
-from launch.actions import DeclareLaunchArgument
+from launch.actions import DeclareLaunchArgument, IncludeLaunchDescription
 from launch.substitutions import LaunchConfiguration
 from launch_ros.actions import Node
 
@@ -12,11 +12,20 @@ def generate_launch_description():
 
     use_sim_time = LaunchConfiguration("use_sim_time")
     lifecycle_nodes = ["controller_server", "planner_server", "smoother_server", "bt_navigator", "behavior_server"]
-    bumperbot_navigation_pkg = get_package_share_directory("bumperbot_navigation")
+    caramelo_navigation_pkg = get_package_share_directory("caramelo_navigation")
 
     use_sim_time_arg = DeclareLaunchArgument(
         "use_sim_time",
-        default_value="true"
+        default_value="false"
+    )
+
+    localization = IncludeLaunchDescription(
+        os.path.join(
+            get_package_share_directory("caramelo_localization"),
+            "launch",
+            "global_localization.launch.py"
+        ),
+        launch_arguments={'use_sim_time': use_sim_time}.items()
     )
 
     nav2_controller_server = Node(
@@ -25,7 +34,7 @@ def generate_launch_description():
         output="screen",
         parameters=[
             os.path.join(
-                bumperbot_navigation_pkg,
+                caramelo_navigation_pkg,
                 "config",
                 "controller_server.yaml"),
             {"use_sim_time": use_sim_time}
@@ -39,7 +48,7 @@ def generate_launch_description():
         output="screen",
         parameters=[
             os.path.join(
-                bumperbot_navigation_pkg,
+                caramelo_navigation_pkg,
                 "config",
                 "planner_server.yaml"),
             {"use_sim_time": use_sim_time}
@@ -53,7 +62,7 @@ def generate_launch_description():
         output="screen",
         parameters=[
             os.path.join(
-                bumperbot_navigation_pkg,
+                caramelo_navigation_pkg,
                 "config",
                 "behavior_server.yaml"),
             {"use_sim_time": use_sim_time}
@@ -67,7 +76,7 @@ def generate_launch_description():
         output="screen",
         parameters=[
             os.path.join(
-                bumperbot_navigation_pkg,
+                caramelo_navigation_pkg,
                 "config",
                 "bt_navigator.yaml"),
             {"use_sim_time": use_sim_time}
@@ -81,7 +90,7 @@ def generate_launch_description():
         output="screen",
         parameters=[
             os.path.join(
-                bumperbot_navigation_pkg,
+                caramelo_navigation_pkg,
                 "config",
                 "smoother_server.yaml"),
             {"use_sim_time": use_sim_time}
@@ -102,6 +111,7 @@ def generate_launch_description():
 
     return LaunchDescription([
         use_sim_time_arg,
+        localization,
         nav2_controller_server,
         nav2_planner_server,
         nav2_smoother_server,

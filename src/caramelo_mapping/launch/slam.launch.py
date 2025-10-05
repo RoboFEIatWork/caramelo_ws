@@ -12,9 +12,8 @@ def generate_launch_description():
     slam_config = LaunchConfiguration("slam_config")
 
     ros_distro = os.environ["ROS_DISTRO"]
-    lifecycle_nodes = ["map_saver_server"]
-    if ros_distro != "humble":
-        lifecycle_nodes.append("slam_toolbox")
+    lifecycle_nodes = ["map_saver_server", "slam_toolbox"]
+    # Note: Both nodes are lifecycle-managed for better control
 
     use_sim_time_arg = DeclareLaunchArgument(
         "use_sim_time",
@@ -39,21 +38,20 @@ def generate_launch_description():
         parameters=[
             {"save_map_timeout": 5.0},
             {"use_sim_time": use_sim_time},
-            {"free_thresh_default": 0.196},
-            {"occupied_thresh_default": 0.65},
+            {"free_thresh_default": 0.196},     # Conservative free threshold
+            {"occupied_thresh_default": 0.65},  # Conservative occupied threshold
         ],
     )
 
     slam_toolbox = Node(
         package="slam_toolbox",
-        executable="sync_slam_toolbox_node",
+        executable="sync_slam_toolbox_node",  # Synchronous mode for real-time
         name="slam_toolbox",
         output="screen",
         parameters=[
             slam_config,
             {"use_sim_time": use_sim_time},
         ],
-        arguments=['--ros-args', '--log-level', 'INFO']
     )
 
     nav2_lifecycle_manager = Node(
@@ -64,8 +62,7 @@ def generate_launch_description():
         parameters=[
             {"node_names": lifecycle_nodes},
             {"use_sim_time": use_sim_time},
-            {"autostart": True},
-            {"bond_timeout": 4.0}
+            {"autostart": True}
         ],
     )
 

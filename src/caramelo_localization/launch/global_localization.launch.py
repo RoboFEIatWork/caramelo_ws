@@ -10,7 +10,7 @@ def generate_launch_description():
 
     use_sim_time_arg = DeclareLaunchArgument(
         name="use_sim_time", 
-        default_value="True",
+        default_value="false",
     )
 
     map_name_arg  = DeclareLaunchArgument(
@@ -21,7 +21,7 @@ def generate_launch_description():
     amcl_config_arg = DeclareLaunchArgument(
         "amcl_config",
         default_value=os.path.join(
-            get_package_share_directory("robot_localizacao"),
+            get_package_share_directory("caramelo_localization"),
             "config",
             "amcl.yaml"
         ),
@@ -35,7 +35,7 @@ def generate_launch_description():
     lifecycle_nodes = ["map_server", "amcl"]
 
     map_path = PathJoinSubstitution([
-        get_package_share_directory("robot_mapping"),
+        get_package_share_directory("caramelo_mapping"),
         "maps",
         map_name,
         "map.yaml",
