@@ -170,6 +170,15 @@ def _create_navigation_stack(context, *args, **kwargs):
         "collision_monitor",
     ]
 
+    # Config do twist_mux: mora em caramelo_utils (junto com as do joystick), e
+    # o caramelo_navigation ja declara exec_depend nele.
+    caramelo_utils_share = get_package_share_directory("caramelo_utils")
+    twist_mux_topics_config = os.path.join(
+        caramelo_utils_share, "config", "twist_mux_topics.yaml")
+    # Saida do mux. Mesmo nome que o teleop ja usava, entao quem apontava para
+    # ele continua funcionando.
+    twist_mux_out_topic = "/caramelo_controller/cmd_vel_unstamped"
+
     caramelo_navigation_pkg = get_package_share_directory("caramelo_navigation")
     docking_launch = os.path.join(caramelo_navigation_pkg, "launch", "docking_server.launch.py")
     nav_profile_value, bt_xml, bt_through_xml = _bt_xml_for_profile(
@@ -336,6 +345,57 @@ def _create_navigation_stack(context, *args, **kwargs):
         ],
     )
 
+    # ------------------------------------------------------------------ #
+    # CAMINHO UNICO DE COMANDO ATE AS RODAS  (2026-09-08)
+    #
+    # Antes, este bloco era so' um twist_relay ("nav2_twist_relay") ligando
+    # /cmd_vel direto em /mecanum_controller/reference, PASSANDO POR FORA do
+    # twist_mux. Isso furava a hierarquia inteira:
+    #
+    #  - o twist_mux existe para arbitrar por PRIORIDADE (joystick 99 >
+    #    teclado 90 > navegacao 80). Com o relay em paralelo, o comando da
+    #    navegacao chegava nas rodas sem passar pelo arbitro, entao um comando
+    #    manual NAO sobrepunha a navegacao: os dois caminhos disputavam o mesmo
+    #    topico a 100 Hz e vencia quem publicasse por ultimo;
+    #  - com o teleop no ar ficava pior. O twist_mux TAMBEM assina /cmd_vel
+    #    (prioridade 80), entao cada comando da navegacao chegava nas rodas
+    #    DUAS vezes, por dois relays independentes, cada um com o seu proprio
+    #    carimbo de tempo.
+    #
+    # Agora o mux e' o unico caminho. Ele mora AQUI, com a navegacao, e nao no
+    # teleop: o teleop e' opcional, e o arbitro nao pode depender de um no
+    # opcional estar no ar.
+    #
+    #   /cmd_vel (saida do collision_monitor) ─┐
+    #   /cmd_vel_key (teclado)                 ├─> twist_mux ─> cmd_vel_unstamped
+    #   /joy_vel (joystick)                    ┘                      │
+    #                                                                 v
+    #                              twist_relay ─> /mecanum_controller/reference
+    #
+    # NAO subimos o twist_marker do pacote twist_mux: ele assina o topico de
+    # saida como TwistStamped enquanto o mux publica Twist (use_stamped: false),
+    # criando colisao de tipos no mesmo topico — o `ros2 topic echo` passa a
+    # RECUSAR o topico e o marcador nunca recebe nada. E' cosmetico e quebrado.
+    # Tambem nao subimos o joystick_relay.py: o joy_teleop desta bancada ja
+    # publica direto em /joy_vel.
+    #
+    # SEM config de locks: o lock "safety_stop" foi removido em 2026-09-08 a
+    # pedido do operador — a behavior tree da missao passou a tratar desvio de
+    # obstaculo, e o safety_stop era um recurso basico de teste que nao esta
+    # mais em uso. Ver caramelo_utils/config/twist_mux_locks.yaml.
+    twist_mux_node = Node(
+        package="twist_mux",
+        executable="twist_mux",
+        name="twist_mux",
+        output="screen",
+        parameters=[
+            twist_mux_topics_config,
+            {"use_sim_time": use_sim_time},
+        ],
+        remappings=[("/cmd_vel_out", twist_mux_out_topic)],
+        condition=IfCondition(use_cmd_vel_relay),
+    )
+
     cmd_vel_relay = Node(
         package="caramelo_utils",
         executable="twist_relay.py",
@@ -343,7 +403,8 @@ def _create_navigation_stack(context, *args, **kwargs):
         output="screen",
         parameters=[
             {"use_sim_time": use_sim_time},
-            {"input_twist_topic": cmd_vel_topic},
+            # Entrada = SAIDA DO MUX, nao mais /cmd_vel cru.
+            {"input_twist_topic": twist_mux_out_topic},
             {"output_twist_stamped_topic": mecanum_reference_topic},
             {"frame_id": "base_footprint"},
         ],
@@ -389,6 +450,7 @@ def _create_navigation_stack(context, *args, **kwargs):
     delayed_navigation = TimerAction(
         period=navigation_start_delay,
         actions=[
+            twist_mux_node,
             cmd_vel_relay,
             nav2_controller_server,
             nav2_planner_server,
