@@ -1,20 +1,7 @@
-# LOCKS DO TWIST_MUX — INTENCIONALMENTE VAZIO (2026-09-08)
-#
-# O lock "safety_stop" foi REMOVIDO a pedido do operador: ele era um recurso
-# basico de teste, e quem trata desvio de obstaculo hoje e' a behavior tree da
-# missao (manip_bt), com o collision_monitor do Nav2 antes do mux.
-#
-# Nenhum launch passa mais este arquivo como parametro do twist_mux — ele fica
-# versionado so' como registro da decisao e como ponto de partida caso um lock
-# volte a ser necessario. Para reativar:
-#   1. descomente o bloco abaixo (ou escreva o seu lock);
-#   2. volte a passar este arquivo em parameters=[] do no twist_mux, em
-#      caramelo_navigation/launch/navigation.launch.py.
-#
-# twist_mux:
-#   ros__parameters:
-#     locks:
-#       safety_stop:
-#         topic   : safety_stop
-#         timeout : 0.0
-#         priority: 255
+twist_mux:
+  ros__parameters:
+    locks:
+      safety_stop:
+        topic   : safety_stop
+        timeout : 0.0
+        priority: 255
