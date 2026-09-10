@@ -1,0 +1,58 @@
+#ATT1
+task_id: ATT1
+name: Teste da ATT1
+duration_min: 14
+active_service_areas: [WS_1, WS_2, WS_4, WS_5, WS_6, SH_1]
+
+objects:
+  - {id: 05, type: ATTC}               # WS_1 -> SH_1 (place na prateleira)
+  - {id: 01, type: ATTC}               # SH_1 -> WS_2 (pick na prateleira)
+  - {id: 02, type: ATTC}               # SH_1 -> WS_2 (pick na prateleira)
+  - {id: 03, type: ATTC}               # WS_1 -> WS_4 (BASE da pilha)
+  - {id: 15, type: ATTC}  
+  - {id: 04, type: ATTC}               # WS_4 -> WS_2 (transferencia normal)
+  - {id: 21, type: ATTC, color: RED}   # WS_2 -> container VERMELHO na WS_1
+  - {id: 06, type: ATTC, color: BLUE}  # WS_2 -> container AZUL na WS_1
+  - {id: 07, type: ATTC}               # WS_1 -> WS_4 (TOPO da pilha, sobre a 03)
+containers: []                         # potes SEM tag, achados por COR na WS_1
+
+start_state:
+  SH_1:
+    obj_ids: [01, 02]
+    cont_ids: []
+  WS_1:
+    obj_ids: []
+    cont_ids: []
+  WS_2:
+    obj_ids: [21, 07]
+    cont_ids: []
+  WS_4:
+    obj_ids: [03,15]
+    cont_ids: []
+  WS_5:
+    obj_ids: [05, 04]
+    cont_ids: []
+  WS_6:
+    obj_ids: [06]
+    cont_ids: []
+
+finish_state:
+  SH_1:
+    obj_ids: [05]
+    cont_ids: []
+  WS_1:
+    obj_ids: [21, 06]        # dentro dos containers vermelho/azul
+    cont_ids: []
+  WS_2:
+    obj_ids: [01]
+    cont_ids: []
+  WS_4:
+    obj_ids: [03, 07]
+    cont_ids: []
+    stacks: [[03, 07]]       # 07 em cima da 03
+  WS_5:
+    obj_ids: []
+    cont_ids: []
+  WS_6:
+    obj_ids: []
+    cont_ids: []

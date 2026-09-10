@@ -1,0 +1,34 @@
+#BTT1
+task_id: BTT1
+name: Teste da BTT1
+duration_min: 8
+active_service_areas: [WS_1, WS_2, WS_4]
+
+objects:
+  - {id: 05, type: ATTC}               
+  - {id: 01, type: ATTC}              
+  - {id: 02, type: ATTC}               
+              
+containers: []                         
+start_state:
+  WS_1:
+    obj_ids: [02]
+    cont_ids: []
+  WS_2:
+    obj_ids: [01]
+    cont_ids: []
+  WS_4:
+    obj_ids: [05]
+    cont_ids: []
+
+finish_state:
+  WS_1:
+    obj_ids: [05]        
+    cont_ids: []
+  WS_2:
+    obj_ids: []
+    cont_ids: []
+  WS_4:
+    obj_ids: [01,02]
+    cont_ids: []     
+ 
